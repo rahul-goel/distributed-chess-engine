@@ -21,7 +21,7 @@ def make_greedy_move(board: chess.Board, player: bool):
     for move in legal_moves:
         tmp_board = board.copy()
         tmp_board.push(move)
-        tmp_score = get_score(board, player) - get_score(board, ~player)
+        tmp_score = get_score(board, player) - get_score(board, not player)
 
         if tmp_score > best_score:
             best_score = tmp_score
