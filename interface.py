@@ -83,6 +83,19 @@ def scatter_boards_among_processes(board_list: list):
     return my_boards
 
 def gather_moves_from_processes(my_moves_list: list, total_num: int):
+    """
+    Gather a list of moves among processes.
+    To be used as shown below:
+
+    if rank == 0:
+        boards_list = [...] # full board list
+        moves_list = [...]
+    else:
+        boards_list = []
+        moves_list = None
+
+    moves_list = gather_moves_from_processes(moves_list, len(board_list))
+    """
     # get MPI info
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
@@ -106,6 +119,19 @@ def gather_moves_from_processes(my_moves_list: list, total_num: int):
     return moves
 
 def gather_scores_from_processes(my_scores_list: list, total_num: int):
+    """
+    Gather a list of scores among processes.
+    To be used as shown below:
+
+    if rank == 0:
+        boards_list = [...] # full board list
+        scores_list = [...]
+    else:
+        boards_list = []
+        scores_list = None
+
+    scores_list = gather_scores_from_processes(scores_list, len(board_list))
+    """
     # get MPI info
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
