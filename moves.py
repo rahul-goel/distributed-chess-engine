@@ -23,7 +23,7 @@ def get_score(board: chess.Board, player: bool):
 
         return total
 
-def minimax(board: chess.Board, depth: int, alpha: float=-inf, beta: float=+inf):
+def minimax(board: chess.Board, depth: int=3, alpha: float=-inf, beta: float=+inf):
     player = board.turn
     if depth == 0 or board.is_game_over():
         return get_score(board, player), None
@@ -93,22 +93,31 @@ def make_parallel_minimax_move(board: chess.Board, depth: int=3):
     if rank == 0:
         # get all the possibe next game states
         legal_moves = list(board.legal_moves)
-        boards_list = [board.copy().push(move) for move in legal_moves]
+        boards_list = []
+        for move in legal_moves:
+            tmp_board = board.copy()
+            tmp_board.push(move)
+            boards_list.append(tmp_board)
     else:
         boards_list = []
     
     my_boards = scatter_boards_among_processes(boards_list)
 
-    my_moves = [random.choice(list(board.legal_moves)) for board in my_boards]
-    my_scores = [random.randint(0, 10) for _ in range(len(moves_list))]
+    my_moves = []
+    my_scores = []
+
+    for board in my_boards:
+        score, move = minimax(board)
+        my_moves.append(move)
+        my_scores.append(score)
 
     moves_list = gather_moves_from_processes(my_moves, len(boards_list))
-    scores_list = gather_moves_from_processes(my_scores, len(boards_list))
+    scores_list = gather_scores_from_processes(my_scores, len(boards_list))
 
     # finally which move should i make?
     if rank == 0:
-        best_score = -1
-        best_move = legal_moves[0]
+        best_score = -inf
+        best_move = None
 
         for move, score in zip(legal_moves, scores_list):
             if score > best_score:

@@ -2,7 +2,7 @@ import chess
 from mpi4py import MPI
 from time import time
 
-from moves import make_greedy_move, make_random_move, make_minimax_move
+from moves import make_greedy_move, make_random_move, make_minimax_move, make_parallel_minimax_move
 
 def main():
     comm = MPI.COMM_WORLD
@@ -23,7 +23,8 @@ def main():
                 board.push(move)
         else:
             # Minimax makes move.
-            move = make_minimax_move(board, 5)
+            # move = make_minimax_move(board, 5)
+            move = make_parallel_minimax_move(board, 5)
             if rank == 0:
                 board.push(move)
         

@@ -6,7 +6,10 @@ from mpi4py import MPI
 
 # uci strings can be 4 or 5 characters long
 def move_to_numpy(move: chess.Move):
-    uci_str = move.uci()
+    if move is None:
+        uci_str = "0" * 5
+    else:
+        uci_str = move.uci()
     if len(uci_str) == 4:
         uci_str += " "
     return np.array([ord(x) for x in uci_str], dtype=np.int32)
@@ -15,7 +18,10 @@ def numpy_to_move(move_array: np.ndarray):
     uci_str = "".join([chr(x) for x in move_array])
     if uci_str[-1] == " ":
         uci_str = uci_str[:-1]
-    return chess.Move.from_uci(uci_str)
+    if uci_str == "0" * 5:
+        return None
+    else:
+        return chess.Move.from_uci(uci_str)
 
 def board_to_numpy(board: chess.Board):
     piece_map = board.piece_map()
