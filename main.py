@@ -30,5 +30,23 @@ def main():
         # used to sync the processes
         board = comm.bcast(board, 0)
 
+    if rank == 0:
+        if board.is_insufficient_material():
+            print("Draw due to insufficient material.")
+        elif board.is_fivefold_repetition():
+            print("Draw due to five-fold repitition.")
+        elif board.is_seventyfive_moves():
+            print("Draw due to seventy-five moves.")
+        elif board.is_stalemate():
+            print("Stalemate.")
+        elif board.is_checkmate():
+            if board.turn:
+                print("Black Won.")
+            else:
+                print("White Won.")
+        
+        print(board.result())
+
+
 if __name__ == "__main__":
     main()
