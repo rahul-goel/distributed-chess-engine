@@ -1,6 +1,8 @@
 import chess
 from mpi4py import MPI
 from time import time
+import random
+import argparse
 
 from moves import make_greedy_move, make_random_move, make_minimax_move, make_parallel_minimax_move
 
@@ -50,4 +52,11 @@ def main():
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--seed", type=int, default=-1)
+    args = parser.parse_args()
+
+    if args.seed != -1:
+        random.seed(args.seed)
+
     main()
