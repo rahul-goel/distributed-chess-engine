@@ -14,16 +14,16 @@ def main(args: argparse.Namespace):
     board = chess.Board()
 
     while not board.is_game_over():
+        if rank == 0:
+            print("Current Number of Moves:", board.fullmove_number)
+            print("Current Board:")
+            if args.prettyprint:
+                print(board.unicode(invert_color=args.invert, empty_square="."))
+            else:
+                print(board)
         if board.turn:
             # Human makes move.
             if rank == 0:
-                print("Current Number of Moves:", board.fullmove_number)
-                print("Current Board:")
-                if args.prettyprint:
-                    print(board.unicode(invert_color=args.invert, empty_square="."))
-                else:
-                    print(board)
-
                 move = make_random_move(board)
                 board.push(move)
         else:

@@ -60,6 +60,33 @@ def minimax(board: chess.Board, depth: int=3, alpha: float=-inf, beta: float=+in
                 min_score, best_move = score, move
         return min_score, best_move
 
+def stockfish_move(board: chess.Board, depth:int=3):
+    stockfish = Stockfish(STOCKFISH_PATH, depth=depth)
+    stockfish.set_fen_position(board.fen())
+
+    eval = stockfish.get_evaluation()
+    if eval['type'] == 'mate':
+        score, move = 20000 * (1 if board.turn > 0 else -1), None
+        del stockfish
+        return score, move
+
+    best_moves = stockfish.get_top_moves(1)
+    # stalemate
+    if len(best_moves) == 0:
+        del stockfish
+        return 0, None
+
+    best_move = best_moves[0]
+    if best_move['Mate'] is not None:
+        score = 20000 * (1 if best_move['Mate'] > 0 else -1)
+        move = chess.Move.from_uci(best_move['Move'])
+    else:
+        score = best_move['Centipawn']
+        move = chess.Move.from_uci(best_move['Move'])
+
+    del stockfish
+    return score, move
+
 def make_random_move(board: chess.Board):
     legal_moves = list(board.legal_moves)
     random_move = random.choice(legal_moves)
@@ -107,20 +134,11 @@ def make_parallel_move(board: chess.Board, depth: int=3, method: str="minimax"):
     my_moves = []
     my_scores = []
 
-    for board in my_boards:
+    for child_board in my_boards:
         if method == "minimax":
-            score, move = minimax(board, depth)
+            score, move = minimax(child_board, depth)
         elif method == "stockfish":
-            stockfish = Stockfish(STOCKFISH_PATH, depth=depth)
-            stockfish.set_fen_position(board.fen())
-            best_move = stockfish.get_top_moves(1)[0]
-
-            if best_move['Mate'] is not None:
-                score = 20000 * (1 if best_move['Mate'] > 0 else -1)
-                move = chess.Move.from_uci(best_move['Move'])
-            else:
-                score = best_move['Centipawn']
-                move = chess.Move.from_uci(best_move['Move'])
+            score, move = stockfish_move(child_board, depth)
         else:
             raise NotImplementedError
         my_moves.append(move)
