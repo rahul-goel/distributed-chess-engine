@@ -20,7 +20,7 @@ def main(args: argparse.Namespace):
                 print("Current Number of Moves:", board.fullmove_number)
                 print("Current Board:")
                 if args.prettyprint:
-                    print(board.unicode(empty_square="."))
+                    print(board.unicode(invert_color=args.invert, empty_square="."))
                 else:
                     print(board)
 
@@ -28,7 +28,7 @@ def main(args: argparse.Namespace):
                 board.push(move)
         else:
             # Minimax makes move.
-            move = make_parallel_move(board, 5, args.method)
+            move = make_parallel_move(board, args.depth, args.method)
             if rank == 0:
                 board.push(move)
         
@@ -57,7 +57,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--seed", type=int, default=-1)
     parser.add_argument("--prettyprint", action="store_true")
+    parser.add_argument("--invert", action="store_true")
     parser.add_argument("--method", type=str, default="minimax")
+    parser.add_argument("--depth", type=int, default=3)
     args = parser.parse_args()
 
     if args.seed != -1:

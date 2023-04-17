@@ -109,7 +109,7 @@ def make_parallel_move(board: chess.Board, depth: int=3, method: str="minimax"):
 
     for board in my_boards:
         if method == "minimax":
-            score, move = minimax(board)
+            score, move = minimax(board, depth)
         elif method == "stockfish":
             stockfish = Stockfish(STOCKFISH_PATH, depth=depth)
             stockfish.set_fen_position(board.fen())
@@ -129,15 +129,22 @@ def make_parallel_move(board: chess.Board, depth: int=3, method: str="minimax"):
     moves_list = gather_moves_from_processes(my_moves, len(boards_list))
     scores_list = gather_scores_from_processes(my_scores, len(boards_list))
 
-    # finally which move should i make?
+    # finally which move should i make?  i am board.turn. i am looking at the
+    # scores of all the states one level down. if i am white, i should maximize.
+    # if i am black i should minimze.
     if rank == 0:
-        best_score = -inf
+        best_score = -inf if board.turn else +inf
         best_move = None
 
         for move, score in zip(legal_moves, scores_list):
-            if score > best_score:
-                best_score = score
-                best_move = move
+            if board.turn:
+                if score > best_score:
+                    best_score = score
+                    best_move = move
+            else:
+                if score < best_score:
+                    best_score = score
+                    best_move = move
         
         return best_move
     else:
