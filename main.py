@@ -4,9 +4,9 @@ from time import time
 import random
 import argparse
 
-from moves import make_greedy_move, make_random_move, make_minimax_move, make_parallel_minimax_move
+from moves import make_greedy_move, make_random_move, make_minimax_move, make_parallel_move
 
-def main():
+def main(args: argparse.Namespace):
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
     size = comm.Get_size()
@@ -19,14 +19,16 @@ def main():
             if rank == 0:
                 print("Current Number of Moves:", board.fullmove_number)
                 print("Current Board:")
-                print(board)
+                if args.prettyprint:
+                    print(board.unicode(empty_square="."))
+                else:
+                    print(board)
 
                 move = make_random_move(board)
                 board.push(move)
         else:
             # Minimax makes move.
-            # move = make_minimax_move(board, 5)
-            move = make_parallel_minimax_move(board, 5)
+            move = make_parallel_move(board, 5, args.method)
             if rank == 0:
                 board.push(move)
         
@@ -54,9 +56,11 @@ def main():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--seed", type=int, default=-1)
+    parser.add_argument("--prettyprint", action="store_true")
+    parser.add_argument("--method", type=str, default="minimax")
     args = parser.parse_args()
 
     if args.seed != -1:
         random.seed(args.seed)
 
-    main()
+    main(args)

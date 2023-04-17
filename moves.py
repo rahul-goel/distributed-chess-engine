@@ -1,5 +1,6 @@
 import chess
 import random
+from stockfish import Stockfish
 from math import inf
 from mpi4py import MPI
 
@@ -84,7 +85,7 @@ def make_greedy_move(board: chess.Board):
     
     return best_move
 
-def make_parallel_minimax_move(board: chess.Board, depth: int=3):
+def make_parallel_move(board: chess.Board, depth: int=3, method: str="minimax"):
     # get MPI info
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
@@ -107,7 +108,21 @@ def make_parallel_minimax_move(board: chess.Board, depth: int=3):
     my_scores = []
 
     for board in my_boards:
-        score, move = minimax(board)
+        if method == "minimax":
+            score, move = minimax(board)
+        elif method == "stockfish":
+            stockfish = Stockfish(STOCKFISH_PATH, depth=depth)
+            stockfish.set_fen_position(board.fen())
+            best_move = stockfish.get_top_moves(1)[0]
+
+            if best_move['Mate'] is not None:
+                score = 20000 * (1 if best_move['Mate'] > 0 else -1)
+                move = chess.Move.from_uci(best_move['Move'])
+            else:
+                score = best_move['Centipawn']
+                move = chess.Move.from_uci(best_move['Move'])
+        else:
+            raise NotImplementedError
         my_moves.append(move)
         my_scores.append(score)
 

@@ -13,3 +13,5 @@ RESULT_WEIGHTS = {
     "LOSS": -1000,
     "TIE": 0,
 }
+
+STOCKFISH_PATH = "/usr/games/stockfish"
