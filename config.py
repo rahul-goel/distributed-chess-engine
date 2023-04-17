@@ -1,16 +1,17 @@
 import chess
 
 PIECES_WEIGHTS = {
-    chess.PAWN: 1,
-    chess.BISHOP: 3,
-    chess.KNIGHT: 3,
-    chess.ROOK: 5,
-    chess.QUEEN: 9,
+    chess.PAWN: 10,
+    chess.BISHOP: 30,
+    chess.KING: 0,
+    chess.KNIGHT: 30,
+    chess.ROOK: 50,
+    chess.QUEEN: 100,
 }
 
 RESULT_WEIGHTS = {
-    "WIN": 1000,
-    "LOSS": -1000,
+    "WIN": 10000,
+    "LOSS": -10000,
     "TIE": 0,
 }
 

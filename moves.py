@@ -3,26 +3,42 @@ import random
 from stockfish import Stockfish
 from math import inf
 from mpi4py import MPI
+from typing import List
 
 from config import *
 from interface import *
 
 def get_score(board: chess.Board, player: bool):
-    if board.is_stalemate() or board.is_fivefold_repetition or board.is_insufficient_material() or board.is_seventyfive_moves():
+    if board.is_stalemate():# or board.is_fivefold_repetition or board.is_insufficient_material() or board.is_seventyfive_moves():
         return RESULT_WEIGHTS["TIE"]
     elif board.is_checkmate() and board.turn == (not player):
         return RESULT_WEIGHTS["WIN"]
     elif board.is_checkmate() and board.turn == player:
         return RESULT_WEIGHTS["LOSS"]
     else:
-        total = 0
-        for piece, weight in PIECES_WEIGHTS:
+        total = random.randint(0, 10)
+        for piece, weight in PIECES_WEIGHTS.items():
             pos_cnt = str(board.pieces(piece, player)).count('1')
             neg_cnt = str(board.pieces(piece, not player)).count('1')
 
             total += (pos_cnt - neg_cnt) * weight
 
         return total
+
+def sorted_moves(board: chess.Board) -> List[str]:
+    NAME_TO_SQUARE = dict(zip(chess.SQUARE_NAMES, chess.SQUARES))
+
+    def square_name(move):
+        return move.uci()[:2]
+
+    moves = list(board.legal_moves)
+
+    squares = [NAME_TO_SQUARE[name] for name in map(square_name, moves)]
+    pieces = [board.piece_type_at(square) for square in squares]
+
+    moves = sorted(zip(moves, pieces), key=lambda x: x[1], reverse=True)
+
+    return moves
 
 def minimax(board: chess.Board, depth: int=3, alpha: float=-inf, beta: float=+inf):
     player = board.turn
@@ -32,7 +48,8 @@ def minimax(board: chess.Board, depth: int=3, alpha: float=-inf, beta: float=+in
     if player:
         # maximizing player
         max_score, best_move = -inf, None
-        for move in board.legal_moves:
+        legal_moves = sorted_moves(board)
+        for move, _ in legal_moves:
             new_board = board.copy()
             new_board.push(move)
             score, _ = minimax(new_board, depth - 1, alpha, beta)
@@ -43,11 +60,15 @@ def minimax(board: chess.Board, depth: int=3, alpha: float=-inf, beta: float=+in
 
             if score > max_score:
                 max_score, best_move = score, move
+            elif score == max_score:
+                if random.randint(0, 1):
+                    max_score, best_move = score, move
         return max_score, best_move
     else:
         # minimizing player
         min_score, best_move = +inf, None
-        for move in board.legal_moves:
+        legal_moves = sorted_moves(board)
+        for move, _ in legal_moves:
             new_board = board.copy()
             new_board.push(move)
             score, _ = minimax(new_board, depth - 1, alpha, beta)
@@ -58,6 +79,9 @@ def minimax(board: chess.Board, depth: int=3, alpha: float=-inf, beta: float=+in
 
             if score < min_score:
                 min_score, best_move = score, move
+            elif score == min_score:
+                if random.randint(0, 1):
+                    max_score, best_move = score, move
         return min_score, best_move
 
 def stockfish_move(board: chess.Board, depth:int=3):
@@ -66,7 +90,7 @@ def stockfish_move(board: chess.Board, depth:int=3):
 
     eval = stockfish.get_evaluation()
     if eval['type'] == 'mate':
-        score, move = 20000 * (1 if board.turn > 0 else -1), None
+        score, move = RESULT_WEIGHTS["WIN"] * (1 if board.turn > 0 else -1), None
         del stockfish
         return score, move
 
@@ -78,7 +102,7 @@ def stockfish_move(board: chess.Board, depth:int=3):
 
     best_move = best_moves[0]
     if best_move['Mate'] is not None:
-        score = 20000 * (1 if best_move['Mate'] > 0 else -1)
+        score = RESULT_WEIGHTS["WIN"] * (1 if best_move['Mate'] > 0 else -1)
         move = chess.Move.from_uci(best_move['Move'])
     else:
         score = best_move['Centipawn']
