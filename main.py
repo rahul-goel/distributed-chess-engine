@@ -4,7 +4,7 @@ from time import time
 import random
 import argparse
 
-from moves import make_greedy_move, make_random_move, make_minimax_move, make_parallel_move
+from moves import make_human_move, make_random_move, make_parallel_move
 
 def main(args: argparse.Namespace):
     comm = MPI.COMM_WORLD
@@ -25,7 +25,10 @@ def main(args: argparse.Namespace):
         if board.turn:
             # Human makes move.
             if rank == 0:
-                move = make_random_move(board)
+                if args.simulate:
+                    move = make_random_move(board)
+                else:
+                    move = make_human_move(board)
                 board.push(move)
         else:
             # AI makes move.
@@ -59,6 +62,7 @@ if __name__ == "__main__":
     parser.add_argument("--seed", type=int, default=-1)
     parser.add_argument("--prettyprint", action="store_true")
     parser.add_argument("--invert", action="store_true")
+    parser.add_argument("--simulate", action="store_true")
     parser.add_argument("--method", type=str, default="minimax")
     parser.add_argument("--depth", type=int, default=3)
     args = parser.parse_args()
