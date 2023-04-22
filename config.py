@@ -15,4 +15,4 @@ RESULT_WEIGHTS = {
     "TIE": 0,
 }
 
-STOCKFISH_PATH = "/usr/games/stockfish"
+STOCKFISH_PATH = "/usr/bin/stockfish"

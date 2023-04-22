@@ -81,7 +81,7 @@ def minimax(board: chess.Board, depth: int=3, alpha: float=-inf, beta: float=+in
                 min_score, best_move = score, move
             elif score == min_score:
                 if random.randint(0, 1):
-                    max_score, best_move = score, move
+                    min_score, best_move = score, move
         return min_score, best_move
 
 def stockfish_move(board: chess.Board, depth:int=3):

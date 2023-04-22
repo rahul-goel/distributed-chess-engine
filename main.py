@@ -10,7 +10,6 @@ from moves import make_human_move, make_random_move, make_parallel_move
 def main(args: argparse.Namespace):
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
-    size = comm.Get_size()
 
     board = chess.Board()
 
@@ -59,7 +58,10 @@ def main(args: argparse.Namespace):
             else:
                 print("White Won.")
         
-        print(board.result())
+        if args.prettyprint:
+            print(board.unicode(invert_color=args.invert, empty_square="."))
+        else:
+            print(board)
 
 
 if __name__ == "__main__":
@@ -68,7 +70,7 @@ if __name__ == "__main__":
     parser.add_argument("--prettyprint", action="store_true")
     parser.add_argument("--invert", action="store_true")
     parser.add_argument("--simulate", action="store_true")
-    parser.add_argument("--method", type=str, default="minimax")
+    parser.add_argument("--method", type=str, default="minimax", choices=["minimax", "stockfish"])
     parser.add_argument("--depth", type=int, default=3)
     args = parser.parse_args()
 
