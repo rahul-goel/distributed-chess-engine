@@ -1,8 +1,9 @@
 import chess
-from mpi4py import MPI
-from time import time
+import time
 import random
 import argparse
+import sys
+from mpi4py import MPI
 
 from moves import make_human_move, make_random_move, make_parallel_move
 
@@ -32,8 +33,12 @@ def main(args: argparse.Namespace):
                 board.push(move)
         else:
             # AI makes move.
+            if rank == 0:
+                start_time = time.time()
             move = make_parallel_move(board, args.depth, args.method)
             if rank == 0:
+                end_time = time.time()
+                print(f"Time to make move: {end_time - start_time:.6f} seconds.", file=sys.stderr)
                 board.push(move)
         
         # used to sync the processes
